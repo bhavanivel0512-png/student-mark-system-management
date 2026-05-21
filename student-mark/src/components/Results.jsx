@@ -10,8 +10,8 @@ function Results() {
     const loadResults = async () => {
       try {
 
-        const res = await fetch(
-          'https://student-mark-backend.onrender.com/api/students',
+        const res = await fetch( 
+'https://student-mark-system-management.onrender.com/api/students',
           { cache: "no-store" }
         )
 

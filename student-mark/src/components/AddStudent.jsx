@@ -16,7 +16,8 @@ function AddStudent() {
     try {
 
       const res = await fetch(
-        'https://student-mark-backend.onrender.com/api/students',
+        // மாத்துங்க:
+'https://student-mark-system-management.onrender.com/api/students',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

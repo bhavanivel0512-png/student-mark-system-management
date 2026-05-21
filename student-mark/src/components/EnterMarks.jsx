@@ -21,7 +21,8 @@ function EnterMarks() {
         await new Promise(r => setTimeout(r, 3000))
 
         const res = await fetch(
-          'https://student-mark-backend.onrender.com/api/students',
+          'https://student-mark-system-management.onrender.com/api/students'
+,
           { cache: "no-store" }
         )
 
@@ -58,7 +59,7 @@ function EnterMarks() {
     try {
 
       await fetch(
-        `https://student-mark-backend.onrender.com/api/students/${selectedId}`,
+        `https://student-mark-system-management.onrender.com/api/students/${selectedId}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
