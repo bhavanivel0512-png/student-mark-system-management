@@ -4,21 +4,19 @@ function Dashboard() {
 
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [editStudent, setEditStudent] = useState(null)
+  const [editForm, setEditForm] = useState({
+    name: '', rollno: '', class: ''
+  })
 
   const fetchStudents = async () => {
     try {
-
       const res = await fetch(
-'https://student-mark-system-management.onrender.com/api/students',
+        'https://student-mark-system-management.onrender.com/api/students',
         { cache: "no-store" }
       )
-
       const data = await res.json()
-
-      console.log("API DATA:", data)
-
       setStudents(Array.isArray(data) ? data : [])
-
     } catch (err) {
       console.log("ERROR:", err)
       setStudents([])
@@ -28,20 +26,61 @@ function Dashboard() {
   }
 
   useEffect(() => {
-
     const load = async () => {
-
       setLoading(true)
-
-      // render wake-up delay safe
       await new Promise(r => setTimeout(r, 3000))
-
       fetchStudents()
     }
-
     load()
-
   }, [])
+
+  // ✅ DELETE
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Delete பண்ணணுமா?")
+    if (!confirm) return
+
+    try {
+      await fetch(
+        `https://student-mark-system-management.onrender.com/api/students/${id}`,
+        { method: 'DELETE' }
+      )
+      alert("Deleted!")
+      fetchStudents() // list refresh
+    } catch (err) {
+      console.log(err)
+      alert("Delete Error!")
+    }
+  }
+
+  // ✅ EDIT - button click பண்ணும்போது form open
+  const handleEditClick = (student) => {
+    setEditStudent(student._id)
+    setEditForm({
+      name: student.name,
+      rollno: student.rollno,
+      class: student.class
+    })
+  }
+
+  // ✅ EDIT - save பண்ணும்போது
+  const handleEditSave = async () => {
+    try {
+      await fetch(
+        `https://student-mark-system-management.onrender.com/api/students/${editStudent}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editForm)
+        }
+      )
+      alert("Updated!")
+      setEditStudent(null)
+      fetchStudents() // list refresh
+    } catch (err) {
+      console.log(err)
+      alert("Update Error!")
+    }
+  }
 
   return (
     <div style={{ padding: '20px' }}>
@@ -55,33 +94,72 @@ function Dashboard() {
           <p>Total Students: {students.length}</p>
 
           <table border="1" cellPadding="10" width="100%">
-
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Roll No</th>
                 <th>Class</th>
+                <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
-
               {students.length === 0 ? (
                 <tr>
-                  <td colSpan="3">No Students Found</td>
+                  <td colSpan="4">No Students Found</td>
                 </tr>
               ) : (
                 students.map((s) => (
                   <tr key={s._id}>
-                    <td>{s.name}</td>
-                    <td>{s.rollno}</td>
-                    <td>{s.class}</td>
+
+                    {/* Edit mode-ல் input boxes காட்டும் */}
+                    {editStudent === s._id ? (
+                      <>
+                        <td>
+                          <input
+                            value={editForm.name}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, name: e.target.value })
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            value={editForm.rollno}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, rollno: e.target.value })
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            value={editForm.class}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, class: e.target.value })
+                            }
+                          />
+                        </td>
+                        <td>
+                          <button onClick={handleEditSave}>💾 Save</button>
+                          <button onClick={() => setEditStudent(null)}>❌ Cancel</button>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td>{s.name}</td>
+                        <td>{s.rollno}</td>
+                        <td>{s.class}</td>
+                        <td>
+                          <button onClick={() => handleEditClick(s)}>✏️ Edit</button>
+                          &nbsp;
+                          <button onClick={() => handleDelete(s._id)}>🗑️ Delete</button>
+                        </td>
+                      </>
+                    )}
+
                   </tr>
                 ))
               )}
-
             </tbody>
-
           </table>
         </>
       )}
