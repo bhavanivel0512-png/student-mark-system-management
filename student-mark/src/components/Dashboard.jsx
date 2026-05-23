@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-
+import React, { useEffect, useState } from 'react'
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
