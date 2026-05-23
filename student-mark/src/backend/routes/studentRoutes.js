@@ -38,24 +38,17 @@ router.post('/', async (req, res) => {
   }
 })
 
-// UPDATE marks
 router.put('/:id', async (req, res) => {
   try {
-
     const updated = await student.findByIdAndUpdate(
       req.params.id,
-      { $set: { mark: req.body.mark } },
+      { $set: req.body }, // ✅ எல்லாத்தையும் update பண்ணும்!
       { new: true }
     )
-
     return res.json(updated)
-
   } catch (err) {
     console.log("PUT ERROR:", err)
-
-    return res.status(500).json({
-      message: err.message
-    })
+    return res.status(500).json({ message: err.message })
   }
 })
 
