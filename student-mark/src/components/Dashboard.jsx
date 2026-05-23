@@ -34,48 +34,59 @@ function Dashboard() {
     load()
   }, [])
 
-  // ✅ DELETE
+  // DELETE
   const handleDelete = async (id) => {
     const confirm = window.confirm("Delete பண்ணணுமா?")
     if (!confirm) return
-
     try {
       await fetch(
         `https://student-mark-system-management.onrender.com/api/students/${id}`,
         { method: 'DELETE' }
       )
       alert("Deleted!")
-      fetchStudents() // list refresh
+      fetchStudents()
     } catch (err) {
       console.log(err)
       alert("Delete Error!")
     }
   }
 
-  // ✅ EDIT - button click பண்ணும்போது form open
-  const handleEditClick = (student) => {
-    setEditStudent(student._id)
+  // EDIT button click
+  const handleEditClick = (s) => {
+    setEditStudent(s._id)
     setEditForm({
-      name: student.name,
-      rollno: student.rollno,
-      class: student.class
+      name: s.name,
+      rollno: s.rollno,
+      class: s.class
     })
   }
 
-  // ✅ EDIT - save பண்ணும்போது
+  // EDIT save
   const handleEditSave = async () => {
     try {
-      await fetch(
+      const existing = students.find(s => s._id === editStudent)
+
+      const res = await fetch(
         `https://student-mark-system-management.onrender.com/api/students/${editStudent}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editForm)
+          body: JSON.stringify({
+            name: editForm.name,
+            rollno: editForm.rollno,
+            class: editForm.class,
+            mark: existing.mark
+          })
         }
       )
+
+      const data = await res.json()
+      console.log("UPDATED:", data)
+
       alert("Updated!")
       setEditStudent(null)
-      fetchStudents() // list refresh
+      fetchStudents()
+
     } catch (err) {
       console.log(err)
       alert("Update Error!")
@@ -111,7 +122,6 @@ function Dashboard() {
                 students.map((s) => (
                   <tr key={s._id}>
 
-                    {/* Edit mode-ல் input boxes காட்டும் */}
                     {editStudent === s._id ? (
                       <>
                         <td>
@@ -140,6 +150,7 @@ function Dashboard() {
                         </td>
                         <td>
                           <button onClick={handleEditSave}>💾 Save</button>
+                          &nbsp;
                           <button onClick={() => setEditStudent(null)}>❌ Cancel</button>
                         </td>
                       </>
