@@ -16,9 +16,10 @@ function Dashboard() {
         { cache: "no-store" }
       )
       const data = await res.json()
+      console.log("FETCHED:", data)
       setStudents(Array.isArray(data) ? data : [])
     } catch (err) {
-      console.log("ERROR:", err)
+      console.log("FETCH ERROR:", err)
       setStudents([])
     } finally {
       setLoading(false)
@@ -36,23 +37,26 @@ function Dashboard() {
 
   // DELETE
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Delete பண்ணணுமா?")
-    if (!confirm) return
+    const ok = window.confirm("Delete பண்ணணுமா?")
+    if (!ok) return
     try {
-      await fetch(
+      const res = await fetch(
         `https://student-mark-system-management.onrender.com/api/students/${id}`,
         { method: 'DELETE' }
       )
+      const data = await res.json()
+      console.log("DELETED:", data)
       alert("Deleted!")
       fetchStudents()
     } catch (err) {
-      console.log(err)
+      console.log("DELETE ERROR:", err)
       alert("Delete Error!")
     }
   }
 
   // EDIT button click
   const handleEditClick = (s) => {
+    console.log("EDIT CLICKED:", s)
     setEditStudent(s._id)
     setEditForm({
       name: s.name,
@@ -63,32 +67,50 @@ function Dashboard() {
 
   // EDIT save
   const handleEditSave = async () => {
+    console.log("SAVE CLICKED!")
+    console.log("editStudent ID:", editStudent)
+    console.log("editForm:", editForm)
+
+    if (!editStudent) {
+      alert("No student selected!")
+      return
+    }
+
     try {
       const existing = students.find(s => s._id === editStudent)
+      console.log("existing student:", existing)
+
+      const body = {
+        name: editForm.name,
+        rollno: editForm.rollno,
+        class: editForm.class,
+        mark: existing ? existing.mark : {}
+      }
+
+      console.log("SENDING BODY:", body)
 
       const res = await fetch(
         `https://student-mark-system-management.onrender.com/api/students/${editStudent}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: editForm.name,
-            rollno: editForm.rollno,
-            class: editForm.class,
-            mark: existing.mark
-          })
+          body: JSON.stringify(body)
         }
       )
 
       const data = await res.json()
-      console.log("UPDATED:", data)
+      console.log("UPDATE RESPONSE:", data)
 
-      alert("Updated!")
-      setEditStudent(null)
-      fetchStudents()
+      if (res.ok) {
+        alert("Updated!")
+        setEditStudent(null)
+        fetchStudents()
+      } else {
+        alert("Update Failed: " + data.message)
+      }
 
     } catch (err) {
-      console.log(err)
+      console.log("UPDATE ERROR:", err)
       alert("Update Error!")
     }
   }
@@ -149,34 +171,13 @@ function Dashboard() {
                           />
                         </td>
                         <td>
-                          <button onClick={handleEditSave}>💾 Save</button>
+                          <button
+                            onClick={() => {
+                              console.log("SAVE BUTTON CLICKED!")
+                              handleEditSave()
+                            }}
+                          >
+                            💾 Save
+                          </button>
                           &nbsp;
-                          <button onClick={() => setEditStudent(null)}>❌ Cancel</button>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td>{s.name}</td>
-                        <td>{s.rollno}</td>
-                        <td>{s.class}</td>
-                        <td>
-                          <button onClick={() => handleEditClick(s)}>✏️ Edit</button>
-                          &nbsp;
-                          <button onClick={() => handleDelete(s._id)}>🗑️ Delete</button>
-                        </td>
-                      </>
-                    )}
-
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </>
-      )}
-
-    </div>
-  )
-}
-
-export default Dashboard
+                          <button onClick={() => setEditStudent(null)}></button>
