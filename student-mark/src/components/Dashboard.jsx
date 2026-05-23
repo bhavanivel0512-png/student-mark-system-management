@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -11,7 +12,6 @@ function Dashboard() {
       const data = await res.json()
       setStudents(Array.isArray(data) ? data : [])
     } catch (err) {
-      console.log(err)
       setStudents([])
     } finally {
       setLoading(false)
@@ -39,17 +39,24 @@ function Dashboard() {
   }
 
   const handleEditClick = (s) => {
+    console.log("EDIT CLICKED:", s._id)
     setEditId(s._id)
     setEditForm({ name: s.name, rollno: s.rollno, class: s.class })
   }
 
   const handleEditSave = async () => {
+    console.log("SAVE CLICKED:", editId)
     try {
       const existing = students.find(s => s._id === editId)
       const res = await fetch(`https://student-mark-system-management.onrender.com/api/students/${editId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editForm.name, rollno: editForm.rollno, class: editForm.class, mark: existing.mark })
+        body: JSON.stringify({
+          name: editForm.name,
+          rollno: editForm.rollno,
+          class: editForm.class,
+          mark: existing.mark
+        })
       })
       const data = await res.json()
       console.log('UPDATED:', data)
@@ -88,25 +95,42 @@ function Dashboard() {
                 students.map((s) => (
                   <tr key={s._id}>
                     {editId === s._id ? (
-                      <React.Fragment>
-                        <td><input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} /></td>
-                        <td><input value={editForm.rollno} onChange={(e) => setEditForm({ ...editForm, rollno: e.target.value })} /></td>
-                        <td><input value={editForm.class} onChange={(e) => setEditForm({ ...editForm, class: e.target.value })} /></td>
+                      <>
                         <td>
-                          <button onClick={handleEditSave}>Save</button>
-                          <button onClick={() => setEditId(null)}>Cancel</button>
+                          <input
+                            value={editForm.name}
+                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                          />
                         </td>
-                      </React.Fragment>
+                        <td>
+                          <input
+                            value={editForm.rollno}
+                            onChange={(e) => setEditForm({ ...editForm, rollno: e.target.value })}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            value={editForm.class}
+                            onChange={(e) => setEditForm({ ...editForm, class: e.target.value })}
+                          />
+                        </td>
+                        <td>
+                          <button onClick={handleEditSave}>💾 Save</button>
+                          &nbsp;
+                          <button onClick={() => setEditId(null)}>❌ Cancel</button>
+                        </td>
+                      </>
                     ) : (
-                      <React.Fragment>
+                      <>
                         <td>{s.name}</td>
                         <td>{s.rollno}</td>
                         <td>{s.class}</td>
                         <td>
-                          <button onClick={() => handleEditClick(s)}>Edit</button>
-                          <button onClick={() => handleDelete(s._id)}>Delete</button>
+                          <button onClick={() => handleEditClick(s)}>✏️ Edit</button>
+                          &nbsp;
+                          <button onClick={() => handleDelete(s._id)}>🗑️ Delete</button>
                         </td>
-                      </React.Fragment>
+                      </>
                     )}
                   </tr>
                 ))
